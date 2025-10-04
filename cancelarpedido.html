@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pedido · Cancelar</title>
+  <style>
+    body{font-family:Arial, sans-serif; background:#f6f7fb; margin:0; color:#0f172a}
+    .wrap{max-width:900px; margin:24px auto; padding:0 16px}
+    .card{background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.04); padding:14px}
+    .section{margin-bottom:14px}
+    .muted{color:#6b7280}
+
+    .field{margin:10px 0}
+    input[type=text]{width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px}
+
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .btn{padding:10px 14px; border:0; border-radius:8px; cursor:pointer}
+    .btn.back{background:#fff; border:1px solid #e5e7eb}
+    .btn.danger{background:#dc2626; color:#fff}
+
+    .msg{display:none; margin-top:12px; padding:10px; border-radius:8px}
+    .ok{background:#dcfce7; color:#065f46}
+    .warn{background:#fef3c7; color:#92400e}
+    .err{background:#fee2e2; color:#7f1d1d}
+    .show{display:block}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <div class="section">
+        <strong>Estado:</strong> <span id="status">Pendiente de procesamiento</span>
+        <ul class="muted">
+          <li>Bowl Proteico 1 — <span id="p1">$6.990</span></li>
+          <li>Snack Proteico 1 — <span id="p2">$2.990</span></li>
+        </ul>
+        <div style="margin-top:6px"><strong>Total:</strong> <span id="total">$9.980</span></div>
+      </div>
+
+      <div class="section card" style="padding:12px">
+        <div class="muted" style="margin-bottom:6px">Motivo (opcional)</div>
+        <input id="reason" type="text" placeholder="Cambio de horario" />
+        <div class="row" style="margin-top:10px">
+          <button id="cancelBtn" class="btn danger">Confirmar cancelación</button>
+          <button class="btn back" id="backBtn">Volver al catálogo</button>
+        </div>
+      </div>
+
+
+      <div id="m-ok" class="msg ok">Pedido cancelado · Te enviaremos la confirmación al correo.</div>
+      <div id="m-warn" class="msg warn">No es posible cancelar · El pedido ya fue procesado.</div>
+      <div id="m-err" class="msg err">Error al cancelar · Intenta nuevamente o contacta soporte.</div>
+    </section>
+  </main>
+
+  <script>
+    function clp(n){ return new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(n); }
+    const bowl=6990, snack=2990; p1.textContent=clp(bowl); p2.textContent=clp(snack); total.textContent=clp(bowl+snack);
+
+
+    const qs = new URLSearchParams(location.search);
+    const state = (qs.get('state')||'pending').toLowerCase();
+    const statusEl = document.getElementById('status');
+    statusEl.textContent = state==='processed' ? 'Procesado' : 'Pendiente de procesamiento';
+
+    const m = { ok: m_ok, warn: m_warn, err: m_err };
+    function hide(){ Object.values(m).forEach(x=>x.classList.remove('show')); }
+
+    cancelBtn.addEventListener('click', function(){
+      hide();
+      if(state==='processed'){ m.warn.classList.add('show'); return; }
+
+      if(Math.random()<0.08){ m.err.classList.add('show'); return; }
+      const reason = document.getElementById('reason').value.trim();
+      console.log('Motivo de cancelación:', reason || '(no especificado)');
+      m.ok.classList.add('show');
+    });
+
+    backBtn.addEventListener('click', ()=> location.href='

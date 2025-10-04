@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login FitExpress</title>
+  <style>
+    body{font-family:Arial, sans-serif; background:#f4f6f8; margin:0}
+    .container{max-width:420px; margin:60px auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.08)}
+    h2{margin:0 0 15px 0; text-align:center}
+    .field{margin-bottom:12px}
+    label{display:block; font-size:14px; margin-bottom:6px}
+    input{width:100%; padding:10px; border:1px solid #cfd8e3; border-radius:6px}
+    button{width:100%; padding:10px; border:0; background:#2563eb; color:#fff; border-radius:6px; cursor:pointer}
+    button:hover{background:#1e40af}
+    .help{margin-top:8px; text-align:right}
+    .help a{font-size:13px; color:#2563eb; text-decoration:none}
+    .msg{display:none; margin-top:12px; padding:10px; border-radius:6px; font-size:14px}
+    .ok{background:#dcfce7; color:#065f46}
+    .warn{background:#fef3c7; color:#92400e}
+    .err{background:#fee2e2; color:#7f1d1d}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Iniciar sesión</h2>
+    <form id="formLogin">
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input type="email" id="email" placeholder="ana@example.com" required />
+      </div>
+      <div class="field">
+        <label for="pass">Contraseña</label>
+        <input type="password" id="pass" placeholder="••••••••" required />
+      </div>
+      <button type="submit">Iniciar sesión</button>
+      <div class="help"><a href="#" id="olvide">¿Olvidaste tu contraseña?</a></div>
+      <div id="msg" class="msg"></div>
+    </form>
+  </div>
+
+  <script>
+    const users = {
+      'ana@example.com': { pass: 'Clave2025', locked: false, expired: false },
+      'expira@example.com': { pass: 'Clave2025', locked: false, expired: true },
+      'bloqueado@example.com': { pass: 'Clave2025', locked: true, expired: false },
+    };
+
+    const form = document.getElementById('formLogin');
+    const msg = document.getElementById('msg');
+
+    function show(type, text){
+      msg.className = 'msg ' + type; 
+      msg.textContent = text;
+      msg.style.display = 'block';
+    }
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      msg.style.display = 'none';
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const pass  = document.getElementById('pass').value;
+
+      const u = users[email];
+      if(!u || u.pass !== pass){
+        show('err', 'Credenciales incorrectas / Cuenta bloqueada');
+        return;
+      }
+      if(u.locked){
+        show('err', 'Credenciales incorrectas / Cuenta bloqueada');
+        return;
+      }
+      if(u.expired){
+        show('warn', 'Sesión expirada / Token inválido');
+        return;
+      }
+      show('ok', 'Sesión iniciada correctamente');
+    });
+
+    document.getElementById('olvide').addEventListener('click', function(e){
+      e.preventDefault();
+      show('warn', 'Te enviaremos un enlace para recuperar tu contraseña.');
+    });
+  </script>
+</body>
+</html>

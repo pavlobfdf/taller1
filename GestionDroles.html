@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · Usuarios</title>
+  <style>
+    :root{
+      --bg:#f5f7fb; --card:#ffffff; --ink:#0f172a; --muted:#6b7280; --primary:#2563eb;
+      --ok:#16a34a; --warn:#d97706; --err:#b91c1c; --border:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family: system-ui, Arial, sans-serif; background:var(--bg); color:var(--ink)}
+    header{max-width:1000px; margin:24px auto 8px; padding:0 16px; display:flex; align-items:center; justify-content:space-between}
+    header h1{font-size:20px; margin:0}
+
+    .card{max-width:1000px; margin:0 auto 28px; background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.04)}
+    .pane{padding:16px}
+
+    .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .toolbar input, .toolbar select{padding:10px 12px; border:1px solid var(--border); border-radius:8px}
+    .toolbar button{padding:10px 14px; border:0; border-radius:8px; background:var(--primary); color:#fff; cursor:pointer}
+    .toolbar button:active{transform:translateY(1px)}
+
+    table{width:100%; border-collapse:collapse; margin-top:12px}
+    th, td{padding:12px 10px; border-top:1px solid var(--border); text-align:left; vertical-align:middle}
+    th{background:#f8fafc; font-size:14px}
+    tbody tr:hover{background:#fafafa}
+    .actions{display:flex; gap:8px}
+    .btn{padding:8px 10px; border:0; border-radius:8px; cursor:pointer}
+    .btn.save{background:#16a34a; color:#fff}
+    .btn.remove{background:#dc2626; color:#fff}
+
+    .legend{font-size:14px; color:var(--muted)}
+
+    .notes{display:grid; grid-template-columns: 1fr 1fr; gap:16px}
+    .note{padding:12px; border:1px solid var(--border); border-radius:10px; background:#f8fafc}
+
+    .msgs{display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; margin-top:16px}
+    .msg{display:none; padding:10px 12px; border-radius:8px; font-weight:600}
+    .msg.ok{background:#dcfce7; color:#065f46}
+    .msg.warn{background:#fef3c7; color:#92400e}
+    .msg.err{background:#fee2e2; color:#7f1d1d}
+    .show{display:block}
+
+    @media (max-width: 760px){
+      .notes{grid-template-columns: 1fr}
+      .msgs{grid-template-columns: 1fr}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Administración de usuarios</h1>
+    <span class="legend">Ruta: /admin/usuarios</span>
+  </header>
+
+  <section class="card">
+    <div class="pane">
+
+      <div class="toolbar">
+        <input id="q" type="search" placeholder="Buscar: ana@" />
+        <select id="roleFilter">
+          <option value="">Rol: Todos</option>
+          <option>Cliente</option>
+          <option>Cajero</option>
+          <option>Despacho</option>
+          <option>Admin</option>
+          <option>Sin rol</option>
+        </select>
+        <button id="refresh">Refrescar</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Rol actual</th>
+            <th>Cambiar rol</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+
+
+      <div class="notes" style="margin-top:16px">
+        <div class="note">
+          <strong>Permisos por rol</strong>
+          <ul>
+            <li><b>Cliente:</b> ver catálogo, comprar</li>
+            <li><b>Cajero:</b> gestionar pagos/boletas</li>
+            <li><b>Despacho:</b> seguimiento de entregas</li>
+            <li><b>Admin:</b> todo lo anterior + administración</li>
+          </ul>
+        </div>
+        <div class="note">
+          <strong>Consejo</strong>
+          <p class="legend">Selecciona un rol en "Cambiar rol" y pulsa <b>Guardar</b>. Con <b>Quitar rol</b> el usuario quedará como "Sin rol".</p>
+        </div>
+      </div>
+
+      <div class="msgs">
+        <div id="m-ok" class="msg ok">Rol actualizado correctamente</div>
+        <div id="m-warn" class="msg warn">Permisos insuficientes · Requiere rol Admin</div>
+        <div id="m-err" class="msg err">Error al actualizar rol · Intenta nuevamente</div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+
+    const users = [
+      { name:'Ana Pérez', email:'ana@example.com', role:'Cliente' },
+      { name:'Diego Soto', email:'diego@example.com', role:'Despacho' },
+      { name:'María Silva', email:'maria@example.com', role:'Cajero' },
+    ];
+
+    const isAdmin = true;
+
+    const roles = ['Cliente','Cajero','Despacho','Admin','Sin rol'];
+
+    const rows = document.getElementById('rows');
+    const q = document.getElementById('q');
+    const roleFilter = document.getElementById('roleFilter');
+
+    function render(){
+      rows.innerHTML = '';
+      const term = q.value.trim().toLowerCase();
+      const rf = roleFilter.value;
+
+      users
+        .filter(u => (!term || u.email.includes(term) || u.name.toLowerCase().includes(term)))
+        .filter(u => (!rf || u.role === rf))
+        .forEach(u => {
+          const tr = document.createElement('tr');
+
+          const tdName = document.createElement('td'); tdName.textContent = u.name; tr.appendChild(tdName);
+          const tdEmail = document.createElement('td'); tdEmail.textContent = u.email; tr.appendChild(tdEmail);
+          const tdRole = document.createElement('td'); tdRole.textContent = u.role; tr.appendChild(tdRole);
+
+          const tdChange = document.createElement('td');
+          const sel = document.createElement('select');
+          roles.forEach(r=>{ const o=document.createElement('option'); o.textContent=r; o.selected = r===u.role; sel.appendChild(o); });
+          tdChange.appendChild(sel); tr.appendChild(tdChange);
+
+          const tdAct = document.createElement('td'); tdAct.className='actions';
+          const bSave = document.createElement('button'); bSave.textContent='Guardar'; bSave.className='btn save';
+          const bDel = document.createElement('button'); bDel.textContent='Quitar rol'; bDel.className='btn remove';
+          tdAct.appendChild(bSave); tdAct.appendChild(bDel); tr.appendChild(tdAct);
+
+
+          bSave.addEventListener('click', async ()=>{
+            hideMsgs();
+            if(!isAdmin){ return show('warn'); }
+            await delay(300);
+            if(Math.random() < 0.10){ return show('err'); }
+            u.role = sel.value;
+            render();
+            show('ok');
+          });
+          bDel.addEventListener('click', async ()=>{
+            hideMsgs();
+            if(!isAdmin){ return show('warn'); }
+            await delay(200);
+            if(Math.random() < 0.10){ return show('err'); }
+            u.role = 'Sin rol';
+            render();
+            show('ok');
+          });
+
+          rows.appendChild(tr);
+        });
+    }
+
+    function delay(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+    const mOk = document.getElementById('m-ok');
+    const mWarn = document.getElementById('m-warn');
+    const mErr = document.getElementById('m-err');
+    function hideMsgs(){ [mOk,mWarn,mErr].forEach(m=>m.classList.remove('show')); }
+    function show(type){ hideMsgs(); ({ok:mOk,warn:mWarn,err:mErr}[type]).classList.add('show'); }
+
+    document.getElementById('refresh').addEventListener('click', ()=>{ hideMsgs(); render(); });
+    q.addEventListener('input', ()=>{ hideMsgs(); render(); });
+    roleFilter.addEventListener('change', ()=>{ hideMsgs(); render(); });
+
+    render();
+  </script>
+</body>
+</html>

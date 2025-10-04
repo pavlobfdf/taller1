@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catálogo con filtros</title>
+  <style>
+    :root{ --bg:#f6f7fb; --card:#fff; --ink:#0f172a; --muted:#6b7280; --border:#e5e7eb; --brand:#2563eb; }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:Arial, system-ui, sans-serif; background:var(--bg); color:var(--ink)}
+    .wrap{max-width:900px; margin:24px auto; padding:0 16px}
+
+    .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px}
+    .chip{display:inline-flex; gap:6px; align-items:center; padding:8px 10px; border:1px solid var(--border); border-radius:999px; background:#fff; font-size:14px}
+    .chip input{accent-color:#111827}
+    .clear{padding:8px 12px; border:0; border-radius:8px; background:var(--brand); color:#fff; cursor:pointer}
+
+    .grid{display:grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap:14px}
+    .p{border:1px solid var(--border); border-radius:12px; background:#fff; padding:12px}
+    .ph{height:120px; background:#f1f5f9; border-radius:8px; margin-bottom:8px}
+    .p h4{margin:0 0 6px}
+    .meta{font-size:12px; color:#15803d; margin-bottom:8px}
+    .add{padding:8px 10px; border:0; border-radius:8px; background:#16a34a; color:#fff; cursor:pointer}
+
+    .note{display:none; margin:16px 0; padding:14px; border:1px solid #f59e0b3d; background:#fef3c7; color:#92400e; border-radius:10px}
+    .note.show{display:block}
+    .note .ok{float:right; padding:4px 10px; border-radius:6px; border:1px solid var(--border); background:#fff; cursor:pointer}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h2 style="margin:0 0 10px">Catálogo</h2>
+    <div class="toolbar">
+      <label class="chip"><input type="checkbox" id="veg"> Vegano</label>
+      <label class="chip"><input type="checkbox" id="prot"> Proteico</label>
+      <label class="chip"><input type="checkbox" id="sg"> Sin gluten</label>
+      <button id="clear" class="clear">Limpiar filtros</button>
+    </div>
+
+    <div id="note" class="note">Sin resultados<br><small>No hay productos que cumplan los filtros.</small>
+      <button id="btnOk" class="ok">OK</button>
+    </div>
+
+    <div id="grid" class="grid"></div>
+  </main>
+
+  <script>
+
+    const products = [
+      { id:1, name:'Bowl Vegano Proteico', price:6490, tags:['vegano','proteico'] },
+      { id:2, name:'Bowl Proteico',       price:6990, tags:['proteico'] },
+      { id:3, name:'Galleta sin gluten',  price:1990, tags:['sin_gluten'] },
+    ];
+
+    const grid = document.getElementById('grid');
+    const note = document.getElementById('note');
+    const filters = {
+      veg: document.getElementById('veg'),
+      prot: document.getElementById('prot'),
+      sg: document.getElementById('sg')
+    };
+
+    function price(n){ return new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(n); }
+
+    function render(list){
+      grid.innerHTML = '';
+      list.forEach(p=>{
+        const c = document.createElement('div'); c.className='p';
+        c.innerHTML = `<div class="ph"></div><h4>${p.name}</h4>` +
+          `<div class="meta">${p.tags.map(tag=>({vegano:'Vegano',proteico:'Proteico','sin_gluten':'Sin gluten'}[tag])).join(' • ')}</div>` +
+          `<div class="price">${price(p.price)}</div>` +
+          `<button class="add">Agregar</button>`;
+        c.querySelector('.add').addEventListener('click', ()=> alert('Agregado: '+p.name));
+        grid.appendChild(c);
+      });
+    }
+
+    function getActiveFilters(){
+      const active = [];
+      if(filters.veg.checked) active.push('vegano');
+      if(filters.prot.checked) active.push('proteico');
+      if(filters.sg.checked) active.push('sin_gluten');
+      return active;
+    }
+
+    function applyFilters(){
+      const active = getActiveFilters();
+      let list = products;
+      if(active.length){
+        list = products.filter(p => active.every(tag => p.tags.includes(tag)));
+      }
+      note.classList.remove('show');
+      if(list.length){ render(list); }
+      else { render([]); note.classList.add('show'); }
+    }
+
+    Object.values(filters).forEach(cb => cb.addEventListener('change', applyFilters));
+    document.getElementById('clear').addEventListener('click', ()=>{
+      Object.values(filters).forEach(cb => cb.checked=false); applyFilters();
+    });
+    document.getElementById('btnOk').addEventListener('click', ()=> note.classList.remove('show'));
+
+
+    applyFilters();
+  </script>
+</body>
+</html>

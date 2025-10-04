@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout · Pago</title>
+  <style>
+    body{font-family:Arial, sans-serif; background:#f6f7fb; margin:0; color:#0f172a}
+    .wrap{max-width:900px; margin:24px auto; padding:0 16px}
+
+    .card{background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.04); padding:14px}
+    .section{margin-bottom:14px}
+    .row{display:flex; align-items:center; justify-content:space-between; gap:10px}
+
+    ul{margin:0; padding-left:18px}
+    .muted{color:#6b7280}
+
+    .method{border:1px solid #e5e7eb; border-radius:12px; padding:12px; background:#fff}
+    .method label{display:block; margin:6px 0}
+
+    .btn{padding:10px 14px; border:0; border-radius:8px; background:#2563eb; color:#fff; cursor:pointer}
+    .btn:disabled{background:#e5e7eb; color:#6b7280; cursor:not-allowed}
+
+    /* WebPay placeholder */
+    .gateway{border:1px dashed #d1d5db; border-radius:12px; padding:20px; text-align:center; color:#6b7280; background:#f8fafc}
+
+    .msg{display:none; margin-top:12px; padding:10px; border-radius:8px}
+    .ok{background:#dcfce7; color:#065f46}
+    .pend{background:#fef3c7; color:#92400e}
+    .err{background:#fee2e2; color:#7f1d1d}
+    .show{display:block}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <!-- Resumen -->
+      <div class="section">
+        <h3 style="margin:0 0 6px">Resumen</h3>
+        <ul class="muted">
+          <li>Bowl Proteico ×1 — <span id="p1">$6.990</span></li>
+          <li>Snack Proteico ×1 — <span id="p2">$2.990</span></li>
+        </ul>
+        <div class="row" style="margin-top:6px"><strong>Total a pagar:</strong> <span id="total">$9.980</span></div>
+      </div>
+      <div class="section method">
+        <h4 style="margin:0 0 6px">Método de pago</h4>
+        <label><input type="radio" name="pay" value="webpay" checked> WebPay (tarjetas, Redcompra)</label>
+        <label><input type="radio" name="pay" value="servipag"> Servipag (opcional)</label>
+        <button id="payBtn" class="btn" style="margin-top:8px">Pagar con WebPay</button>
+      </div>
+      <div class="section">
+        <div id="gateway" class="gateway">WebPay<br><small>[Formulario seguro de tarjeta]</small></div>
+      </div>
+
+      <div id="m-ok" class="msg ok">Pago aprobado · Pedido procesado.</div>
+      <div id="m-p" class="msg pend">Pago pendiente · Puedes reintentar.</div>
+      <div id="m-e" class="msg err">Pago rechazado · Usa otro método.</div>
+    </section>
+  </main>
+
+  <script>
+    function clp(n){ return new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(n); }
+    const bowl=6990, snack=2990; document.getElementById('p1').textContent=clp(bowl); document.getElementById('p2').textContent=clp(snack); document.getElementById('total').textContent=clp(bowl+snack);
+    const payBtn = document.getElementById('payBtn');
+    document.querySelectorAll('input[name=pay]').forEach(r=>{
+      r.addEventListener('change', function(){
+        payBtn.textContent = this.value==='webpay' ? 'Pagar con WebPay' : 'Pagar con Servipag';
+        document.getElementById('gateway').textContent = this.value==='webpay' ? 'WebPay\n[Formulario seguro de tarjeta]' : 'Servipag\n[Instrucciones de pago]';
+      });
+    });
+    const m = { ok:document.getElementById('m-ok'), p:document.getElementById('m-p'), e:document.getElementById('m-e') };
+    function show(x){ Object.values(m).forEach(el=>el.classList.remove('show')); x && x.classList.add('show'); }
+
+    payBtn.addEventListener('click', function(){
+      show(null);
+      const q = new URLSearchParams(location.search); const st = q.get('status');
+      let result = st || (['ok','p','e'][Math.floor(Math.random()*3)]);
+      if(result==='ok') show(m.ok); else if(result==='pend'||result==='p') show(m.p); else show(m.e);
+    });
+  </script>
+</body>
+</html>

@@ -1,35 +1,192 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <title>B05 · Carrito de compras (Skeleton)</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catálogo + Carrito · FitExpress</title>
+  <style>
+    :root{ --bg:#f6f7fb; --card:#fff; --ink:#0f172a; --muted:#6b7280; --border:#e5e7eb; --brand:#16a34a; --danger:#dc2626 }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:Arial, system-ui, sans-serif; background:var(--bg); color:var(--ink)}
+    .wrap{max-width:1000px; margin:24px auto; padding:0 16px; display:grid; grid-template-columns: 1fr 360px; gap:16px}
+    @media (max-width: 900px){ .wrap{grid-template-columns: 1fr} }
+
+    .card{background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.04)}
+    .pane{padding:14px}
+
+
+    .prod{display:flex; gap:12px; align-items:flex-start; border:1px solid var(--border); border-radius:14px; padding:12px; background:#fff}
+    .ph{width:120px; height:90px; background:#f1f5f9; border-radius:8px}
+    .prod h4{margin:0 0 4px}
+    .prod .desc{color:var(--muted); font-size:14px; margin:0 0 8px}
+    .price{font-weight:700; margin-bottom:8px}
+    .btn{padding:8px 12px; border:0; border-radius:8px; cursor:pointer}
+    .btn.add{background:var(--brand); color:#fff}
+
+    .cart h3{margin:0 0 10px}
+    .item{border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px}
+    .row{display:flex; justify-content:space-between; align-items:center; gap:8px}
+    .qty{display:inline-flex; gap:6px; align-items:center}
+    .qty button{width:28px; height:28px; border:1px solid var(--border); background:#fff; border-radius:6px; cursor:pointer}
+    .remove{border:1px solid var(--border); background:#fff; border-radius:6px; padding:6px 10px; cursor:pointer}
+
+    .coupon{display:flex; gap:8px; margin:10px 0}
+    .coupon input{flex:1; padding:8px 10px; border:1px solid var(--border); border-radius:8px}
+    .coupon button{padding:8px 12px; border:0; border-radius:8px; background:#2563eb; color:#fff; cursor:pointer}
+
+    .totals{margin-top:8px; font-size:14px}
+    .totals .line{display:flex; justify-content:space-between; margin:6px 0}
+    .totals .discount{color:#059669}
+    .totals .grand{font-weight:800}
+
+    .pay{width:100%; padding:12px; border:0; border-radius:10px; background:var(--brand); color:#fff; font-weight:700; cursor:pointer; margin-top:10px}
+    .pay:disabled{background:#e5e7eb; color:#6b7280; cursor:not-allowed}
+
+    .msg{display:none; margin-top:10px; padding:10px; border-radius:8px; background:#fee2e2; color:#7f1d1d}
+    .show{display:block}
+  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="row">
-      <div class="col-12"></div>
-    </div>
-    <div class="row">
-      <div class="col-12 col-md-6">
-        <div class="row">
-          <div class="col-12"></div>
+  <main class="wrap">
+
+    <section class="card">
+      <div class="pane">
+        <div class="prod">
+          <div class="ph"></div>
+          <div>
+            <h4>Bowl Proteico</h4>
+            <p class="desc">Base quinoa, pollo, verduras.</p>
+            <div class="price" id="pprice"></div>
+            <button id="add" class="btn add">Agregar</button>
+          </div>
         </div>
       </div>
-      <div class="col-12 col-md-6">
-        <div class="row">
-          <div class="col-12"></div>
+    </section>
+
+
+    <aside class="card cart">
+      <div class="pane">
+        <h3>Carrito</h3>
+        <div id="empty" class="muted" style="color:#6b7280">Carrito vacío</div>
+        <div id="items"></div>
+
+        <div class="coupon">
+          <label for="cup" style="display:none">Cupón</label>
+          <input id="cup" placeholder="Cupón: FIT10" />
+          <button id="apply">Aplicar</button>
         </div>
-        <div class="row">
-          <div class="col-12"></div>
+
+        <div class="totals">
+          <div class="line"><span>Subtotal</span><span id="subtotal">$0</span></div>
+          <div class="line discount"><span>Descuento</span><span id="discount">-$0</span></div>
+          <div class="line grand"><span>Total</span><span id="total">$0</span></div>
         </div>
-        <div class="row">
-          <div class="col-12"></div>
-        </div>
+
+        <button id="pay" class="pay" disabled>Ir a pagar</button>
+        <div id="msg" class="msg">Stock insuficiente · No se puede agregar la cantidad solicitada.</div>
       </div>
-    </div>
-  </div>
+    </aside>
+  </main>
+
+  <script>
+
+    const product = { id:1, name:'Bowl Proteico', price:6990, stock:5, desc:'Base quinoa, pollo, verduras.' };
+    document.getElementById('pprice').textContent = clp(product.price);
+
+
+    const cart = { 
+      items: [], coupon: null
+    };
+
+ 
+    document.getElementById('add').addEventListener('click', ()=> addToCart(product, 1));
+
+
+    const itemsEl = document.getElementById('items');
+    const emptyEl = document.getElementById('empty');
+    const payBtn = document.getElementById('pay');
+    const msg = document.getElementById('msg');
+
+    function addToCart(p, qty){
+      msg.classList.remove('show');
+      const found = cart.items.find(i=>i.id===p.id);
+      const currentQty = found? found.qty : 0;
+      if(currentQty + qty > p.stock){ msg.classList.add('show'); return; }
+      if(found) found.qty += qty; else cart.items.push({id:p.id, name:p.name, price:p.price, qty});
+      renderCart();
+    }
+
+    function updateQty(id, delta){
+      const it = cart.items.find(i=>i.id===id); if(!it) return;
+      const newQty = it.qty + delta;
+      if(newQty < 1){ it.qty = 1; return renderCart(); }
+      if(newQty > product.stock){ msg.classList.add('show'); return; }
+      it.qty = newQty; renderCart();
+    }
+
+    function removeItem(id){ cart.items = cart.items.filter(i=>i.id!==id); renderCart(); }
+
+    function renderCart(){
+      itemsEl.innerHTML = '';
+      msg.classList.remove('show');
+      emptyEl.style.display = cart.items.length? 'none':'block';
+      payBtn.disabled = cart.items.length===0;
+
+      cart.items.forEach(it=>{
+        const wrap = document.createElement('div'); wrap.className='item';
+        const top = document.createElement('div'); top.className='row';
+        top.innerHTML = `<strong>${it.name}</strong><span>${clp(it.price)}</span>`;
+
+        const ctrls = document.createElement('div'); ctrls.className='row';
+        const qty = document.createElement('div'); qty.className='qty';
+        const bMin = document.createElement('button'); bMin.textContent='-';
+        const bPlus = document.createElement('button'); bPlus.textContent='+';
+        const span = document.createElement('span'); span.textContent = it.qty;
+        qty.append(bMin, span, bPlus);
+
+        const rm = document.createElement('button'); rm.className='remove'; rm.textContent='Eliminar';
+        ctrls.append(qty, rm);
+
+        wrap.append(top, ctrls);
+        itemsEl.appendChild(wrap);
+
+        bMin.addEventListener('click', ()=> updateQty(it.id, -1));
+        bPlus.addEventListener('click', ()=> updateQty(it.id, +1));
+        rm.addEventListener('click', ()=> removeItem(it.id));
+      });
+
+
+      const subtotal = cart.items.reduce((s,i)=> s + i.price * i.qty, 0);
+      const discount = calcDiscount(subtotal, cart.coupon);
+      const total = Math.max(0, subtotal - discount);
+      document.getElementById('subtotal').textContent = clp(subtotal);
+      document.getElementById('discount').textContent = '-' + clp(discount);
+      document.getElementById('total').textContent = clp(total);
+    }
+
+
+    document.getElementById('apply').addEventListener('click', ()=>{
+      const val = document.getElementById('cup').value.trim().toUpperCase();
+      cart.coupon = (val==='FIT10') ? {code:'FIT10', type:'percent', value:10} : null;
+      renderCart();
+    });
+
+
+    payBtn.addEventListener('click', ()=>{
+      if(cart.items.length===0) return; // safety
+      alert('Carrito enviado a pago: ' + document.getElementById('total').textContent);
+    });
+
+
+    function clp(n){ return new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(n); }
+    function calcDiscount(subtotal, coupon){
+      if(!coupon) return 0;
+      if(coupon.type==='percent') return Math.round(subtotal * (coupon.value/100));
+      return 0;
+    }
+
+
+    renderCart();
+  </script>
 </body>
 </html>

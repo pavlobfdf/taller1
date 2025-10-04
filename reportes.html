@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin · Reportes</title>
+  <style>
+
+    body{font-family:Arial, sans-serif; background:#f6f7fb; margin:0; color:#0f172a}
+    .wrap{max-width:960px; margin:24px auto; padding:0 16px}
+    .card{background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.04); padding:14px}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    label{font-size:14px}
+    input,select{padding:10px; border:1px solid #e5e7eb; border-radius:8px}
+    .btn{padding:10px 14px; border:0; border-radius:8px; cursor:pointer}
+    .btn.primary{background:#2563eb; color:#fff}
+    .btn.green{background:#16a34a; color:#fff}
+    .btn.gray{background:#e5e7eb}
+
+    pre{white-space:pre-wrap; background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:10px; font-size:13px}
+
+    .msg{display:none; margin-top:10px; padding:10px; border-radius:8px}
+    .ok{background:#dcfce7; color:#065f46}
+    .warn{background:#fef3c7; color:#92400e}
+    .err{background:#fee2e2; color:#7f1d1d}
+    .show{display:block}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+
+    <section class="card">
+      <h3 style="margin:0 0 8px">Filtros de búsqueda</h3>
+      <div class="row">
+        <label>Desde: <input id="from" type="date"></label>
+        <label>Hasta: <input id="to" type="date"></label>
+        <label>Producto: 
+          <select id="product">
+            <option value="">(Todos)</option>
+            <option>Bowls</option>
+            <option>Snacks</option>
+            <option>Extras</option>
+          </select>
+        </label>
+        <label>Cliente:
+          <select id="client">
+            <option value="">(Todos)</option>
+            <option>Ana Pérez</option>
+            <option>Diego Soto</option>
+            <option>María Silva</option>
+            <option>Carlos Reyes</option>
+            <option>Valentina Díaz</option>
+          </select>
+        </label>
+        <label>Formato:
+          <select id="format">
+            <option>PDF</option>
+            <option>Excel</option>
+          </select>
+        </label>
+        <button id="gen" class="btn primary">Generar reporte</button>
+      </div>
+    </section>
+    <section class="card" style="margin-top:12px">
+      <h4 style="margin:0 0 8px">Vista previa (primeras 5 filas)</h4>
+      <pre id="preview">—</pre>
+      <div class="row" style="margin-top:8px">
+        <button id="pdf" class="btn gray" disabled>Exportar PDF</button>
+        <button id="xls" class="btn green" disabled>Exportar Excel</button>
+      </div>
+
+      <div id="m-ok" class="msg ok">Reporte generado con éxito</div>
+      <div id="m-none" class="msg warn">No hay datos para el período/filtros</div>
+      <div id="m-err" class="msg err">Error al generar · tiempo de espera agotado</div>
+    </section>
+
+    <section class="card" style="margin-top:12px">
+      <pre>GET /reportes/ventas?desde=YYYY-MM-DD&hasta=YYYY-MM-DD&producto=&cliente=
+GET /reportes/ventas/export?formato=pdf|excel</pre>
+    </section>
+  </main>
+
+  <script>
+    const data = [
+      { d:'2025-09-01', id:'#1023', client:'Ana Pérez',    items:2, total:12980, product:'Bowls' },
+      { d:'2025-09-02', id:'#1029', client:'Diego Soto',   items:1, total:6990,  product:'Bowls' },
+      { d:'2025-09-03', id:'#1032', client:'María Silva',  items:3, total:18470, product:'Snacks' },
+      { d:'2025-09-05', id:'#1037', client:'Carlos Reyes', items:1, total:7990,  product:'Extras' },
+      { d:'2025-09-06', id:'#1040', client:'Valentina Díaz', items:2, total:13980, product:'Snacks' },
+      { d:'2025-08-25', id:'#0999', client:'Ana Pérez', items:1, total:2990, product:'Extras' }
+    ];
+
+    const el = {
+      from:document.getElementById('from'), to:document.getElementById('to'),
+      product:document.getElementById('product'), client:document.getElementById('client'),
+      format:document.getElementById('format'), gen:document.getElementById('gen'),
+      preview:document.getElementById('preview'), pdf:document.getElementById('pdf'), xls:document.getElementById('xls'),
+      ok:document.getElementById('m-ok'), none:document.getElementById('m-none'), err:document.getElementById('m-err')
+    };
+    (function prefill(){
+      const now = new Date();
+      const y = now.getFullYear(); const m = String(now.getMonth()+1).padStart(2,'0');
+      el.from.value = `${y}-${m}-01`;
+      el.to.value = `${y}-${m}-${new Date(y, now.getMonth()+1, 0).getDate().toString().padStart(2,'0')}`;
+    })();
+
+    function clp(n){ return new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(n); }
+    function show(x){ [el.ok,el.none,el.err].forEach(m=>m.classList.remove('show')); x && x.classList.add('show'); }
+
+    let lastRows = [];
+
+    el.gen.addEventListener('click', function(){
+      show(null); el.pdf.disabled = true; el.xls.disabled = true; el.preview.textContent = 'Generando…';
+      if(Math.random() < 0.10){ el.preview.textContent='—'; show(el.err); return; }
+      const f = el.from.value || '0000-01-01';
+      const t = el.to.value   || '9999-12-31';
+      const p = el.product.value; const c = el.client.value;
+      const rows = data.filter(r => r.d >= f && r.d <= t)
+                       .filter(r => !p || r.product===p)
+                       .filter(r => !c || r.client===c);
+
+      if(rows.length===0){ el.preview.textContent='—'; show(el.none); lastRows = []; return; }
+
+      lastRows = rows.slice(0,5);
+      const header = 'Fecha | Pedido | Cliente | Ítems | Total';
+      const body = lastRows.map(r => `${r.d} | ${r.id} | ${r.client} | ${r.items} | ${clp(r.total)}`).join('\n');
+      el.preview.textContent = header + '\n' + body;
+      show(el.ok);
+      el.pdf.disabled = false; el.xls.disabled = false;
+    });
+
+    el.pdf.addEventListener('click', function(){
+      alert('Descargando PDF (demo) con ' + lastRows.length + ' filas');
+    });
+    el.xls.addEventListener('click', function(){
+      if(!lastRows.length) return;
+      const csv = ['Fecha,Pedido,Cliente,Items,Total']
+        .concat(lastRows.map(r => `${r.d},${r.id},${r.client},${r.items},${r.total}`))
+        .join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'reporte.csv'; a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  </script>
+</body>
+</html>

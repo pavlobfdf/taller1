@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperar contraseña</title>
+  <style>
+
+    body{font-family:Arial, sans-serif; background:#f6f7fb; margin:0; color:#0f172a}
+    .wrap{max-width:920px; margin:24px auto; padding:0 16px; display:grid; grid-template-columns: 1fr; gap:16px}
+    .card{background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.04); padding:14px}
+    h2{margin:0 0 12px}
+    .field{margin-bottom:10px}
+    label{display:block; font-size:14px; margin-bottom:6px}
+    input{width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px}
+    .btn{padding:10px 14px; border:0; border-radius:8px; background:#2563eb; color:#fff; cursor:pointer}
+
+    .msg{display:none; margin-top:10px; padding:10px; border-radius:8px; font-size:14px}
+    .ok{background:#dcfce7; color:#065f46}
+    .warn{background:#fef3c7; color:#92400e}
+    .err{background:#fee2e2; color:#7f1d1d}
+    .show{display:block}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+
+    <section class="card">
+      <h2>Paso 1 — Solicitar enlace</h2>
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input id="email" type="email" placeholder="ana@example.com" required>
+      </div>
+      <button class="btn" id="send">Enviar enlace</button>
+      <div id="m1-ok" class="msg ok">Te enviamos un enlace temporal de recuperación.</div>
+      <div id="m1-err" class="msg warn">No encontramos una cuenta con ese correo.</div>
+    </section>
+
+    <section class="card">
+      <h2>Paso 2 — Restablecer contraseña <span id="tokenInfo" style="font-size:12px; color:#6b7280"></span></h2>
+      <div class="field">
+        <label for="p1">Nueva contraseña</label>
+        <input id="p1" type="password" placeholder="••••••••">
+      </div>
+      <div class="field">
+        <label for="p2">Confirmar contraseña</label>
+        <input id="p2" type="password" placeholder="••••••••">
+      </div>
+      <button class="btn" id="save">Guardar nueva contraseña</button>
+
+      <div id="m2-ok" class="msg ok">Contraseña actualizada — ahora puedes iniciar sesión.</div>
+      <div id="m2-warn" class="msg warn">El token expiró o ya fue usado — solicita un nuevo enlace.</div>
+      <div id="m2-err" class="msg err">Las contraseñas no coinciden o no cumplen la política (8+ con mayúscula, minúscula y número).</div>
+    </section>
+  </main>
+
+  <script>
+
+    const knownEmails = ['ana@example.com','demo@fitexpress.cl'];
+    const m1ok = document.getElementById('m1-ok');
+    const m1err = document.getElementById('m1-err');
+    function toggle(el){ el.classList.add('show'); setTimeout(()=>el.classList.remove('show'), 4000); }
+
+    document.getElementById('send').addEventListener('click', function(){
+      m1ok.classList.remove('show'); m1err.classList.remove('show');
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      if(knownEmails.includes(email)) toggle(m1ok); else toggle(m1err);
+    });
+
+
+    const params = new URLSearchParams(location.search);
+    const tokenState = params.get('token') || 'ok';
+    document.getElementById('tokenInfo').textContent = '(token válido 15 min)';
+
+    function validPass(p){
+      return p.length>=8 && /[a-z]/.test(p) && /[A-Z]/.test(p) && /\d/.test(p);
+    }
+
+    const m2ok = document.getElementById('m2-ok');
+    const m2warn = document.getElementById('m2-warn');
+    const m2err = document.getElementById('m2-err');
+
+    document.getElementById('save').addEventListener('click', function(){
+      [m2ok,m2warn,m2err].forEach(x=>x.classList.remove('show'));
+      if(tokenState !== 'ok'){ m2warn.classList.add('show'); return; }
+      const a = document.getElementById('p1').value;
+      const b = document.getElementById('p2').value;
+      if(a!==b || !validPass(a)){ m2err.classList.add('show'); return; }
+      m2ok.classList.add('show');
+    });
+  </script>
+</body>
+</html>

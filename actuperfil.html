@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi perfil · FitExpress</title>
+  <style>
+    body{font-family:Arial, sans-serif; background:#f6f7fb; margin:0; color:#0f172a}
+    .wrap{max-width:920px; margin:24px auto; padding:0 16px}
+    .card{background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.04); padding:14px}
+    h3{margin:0 0 10px}
+
+    .field{margin-bottom:10px}
+    label{display:block; font-size:14px; margin-bottom:6px}
+    input{width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px}
+
+    .row{display:flex; gap:12px; flex-wrap:wrap}
+    .row .col{flex:1 1 260px}
+
+    .btn{padding:10px 14px; border:0; border-radius:8px; cursor:pointer}
+    .btn.primary{background:#16a34a; color:#fff; font-weight:700}
+    .btn.blue{background:#2563eb; color:#fff}
+
+    .muted{color:#6b7280; font-size:13px}
+
+    .msgs{display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:12px}
+    .msg{display:none; padding:10px; border-radius:8px; font-size:14px}
+    .ok{background:#dcfce7; color:#065f46}
+    .warn{background:#fef3c7; color:#92400e}
+    .err{background:#fee2e2; color:#7f1d1d}
+    .show{display:block}
+
+    @media (max-width: 640px){ .msgs{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <!-- Datos personales -->
+    <section class="card">
+      <h3>Datos personales</h3>
+      <div class="row">
+        <div class="col field">
+          <label for="name">Nombre</label>
+          <input id="name" placeholder="Ana Pérez" />
+        </div>
+        <div class="col field">
+          <label for="phone">Teléfono</label>
+          <input id="phone" placeholder="+56 9 1234 5678" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="addr">Dirección</label>
+        <input id="addr" placeholder="Av. Saludable 123, Ñuñoa" />
+      </div>
+      <button id="save" class="btn primary">Guardar cambios</button>
+    </section>
+
+    <!-- Seguridad -->
+    <section class="card" style="margin-top:12px">
+      <h3>Seguridad</h3>
+      <div class="field">
+        <label for="email">Correo (solo lectura)</label>
+        <input id="email" value="ana@example.com" readonly />
+        <div class="muted">* Se enviará un correo de confirmación si cambias datos sensibles (teléfono/dirección).</div>
+      </div>
+      <button id="pwd" class="btn blue">Cambiar contraseña</button>
+    </section>
+
+    <!-- Mensajes -->
+    <section class="msgs">
+      <div id="m-ok" class="msg ok">Perfil actualizado correctamente</div>
+      <div id="m-warn" class="msg warn">Faltan campos requeridos o formato inválido (teléfono)</div>
+      <div id="m-mail" class="msg ok">Correo de confirmación enviado por cambio sensible</div>
+      <div id="m-err" class="msg err">Error al guardar cambios — reintenta</div>
+    </section>
+  </main>
+
+  <script>
+
+    const initial = {
+      name: 'Ana Pérez',
+      phone: '+56 9 1234 5678',
+      addr: 'Av. Saludable 123, Ñuñoa'
+    };
+
+
+    document.getElementById('name').value = initial.name;
+    document.getElementById('phone').value = initial.phone;
+    document.getElementById('addr').value = initial.addr;
+
+    const m = {
+      ok: document.getElementById('m-ok'),
+      warn: document.getElementById('m-warn'),
+      mail: document.getElementById('m-mail'),
+      err: document.getElementById('m-err')
+    };
+    function show(x){ Object.values(m).forEach(el=>el.classList.remove('show')); x && x.classList.add('show'); }
+
+    function validPhone(v){
+
+      return /^(\+?56\s?)?9\s?\d{4}\s?\d{4}$/.test(v.trim());
+    }
+
+    document.getElementById('save').addEventListener('click', function(){
+
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const addr = document.getElementById('addr').value.trim();
+
+      if(!name || !addr || !validPhone(phone)){
+        return show(m.warn);
+      }
+
+
+      if(Math.random() < 0.05){ return show(m.err); }
+
+      const sensitiveChanged = (phone !== initial.phone) || (addr !== initial.addr);
+      show(m.ok);
+      if(sensitiveChanged){
+
+        m.mail.classList.add('show');
+
+        initial.phone = phone; initial.addr = addr; initial.name = name;
+      }
+    });
+
+    document.getElementById('pwd').addEventListener('click', function(){
+      alert('Ir al flujo de cambio de contraseña');
+    });
+  </script>
+</body>
+</html>

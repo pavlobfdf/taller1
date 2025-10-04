@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro FitExpress</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+    .container { max-width: 400px; margin: 50px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    h2 { text-align: center; }
+    .field { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-size: 14px; }
+    input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    button { width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #1e40af; }
+    .alert { display: none; padding: 10px; margin-top: 10px; border-radius: 5px; font-size: 14px; }
+    .error { background: #fee2e2; color: #7f1d1d; }
+    .success { background: #dcfce7; color: #065f46; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Registro de Usuario</h2>
+    <form id="formRegistro">
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" required>
+      </div>
+      <button type="submit">Registrar</button>
+      <div id="msg" class="alert"></div>
+    </form>
+  </div>
+
+  <script>
+    const usuarios = ["ana@example.com"];
+
+    function validarPassword(pass) {
+      return pass.length >= 8 && /[a-z]/.test(pass) && /[A-Z]/.test(pass) && /\d/.test(pass);
+    }
+
+    document.getElementById("formRegistro").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim().toLowerCase();
+      const pass = document.getElementById("password").value;
+      const msg = document.getElementById("msg");
+
+      msg.style.display = "block";
+
+      if (usuarios.includes(email)) {
+        msg.textContent = "El email ya está en uso";
+        msg.className = "alert error";
+        return;
+      }
+
+      if (!validarPassword(pass)) {
+        msg.textContent = "La contraseña no cumple los requisitos";
+        msg.className = "alert error";
+        return;
+      }
+
+      usuarios.push(email);
+      msg.textContent = "Registro exitoso";
+      msg.className = "alert success";
+    });
+  </script>
+</body>
+</html>

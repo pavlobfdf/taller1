@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin · Gestión de productos</title>
+  <style>
+
+    body{font-family:Arial, sans-serif; background:#f6f7fb; margin:0; color:#0f172a}
+    .wrap{max-width:980px; margin:24px auto; padding:0 16px}
+    .card{background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.04); padding:14px}
+
+    .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    input, select{padding:10px; border:1px solid #e5e7eb; border-radius:8px}
+    .btn{padding:10px 14px; border:0; border-radius:8px; cursor:pointer}
+    .btn.primary{background:#16a34a; color:#fff}
+    .btn.blue{background:#2563eb; color:#fff}
+    .btn.red{background:#ef4444; color:#fff}
+    .btn.gray{background:#e5e7eb}
+
+    table{width:100%; border-collapse:collapse; margin-top:12px}
+    th,td{padding:10px; border-top:1px solid #e5e7eb; text-align:left}
+    th{background:#f8fafc}
+    tr:hover{background:#fafafa}
+
+    .msg{display:none; margin-top:10px; padding:10px; border-radius:8px; font-size:14px}
+    .ok{background:#dcfce7; color:#065f46}
+    .warn{background:#fef3c7; color:#92400e}
+    .err{background:#fee2e2; color:#7f1d1d}
+    .show{display:block}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h2 style="margin:0 0 8px">Gestión de productos</h2>
+
+
+      <div class="toolbar" style="margin-bottom:8px">
+        <input id="pname" placeholder="Nombre (p. ej., Bowl Proteico)" />
+        <select id="pcat"><option>Bowls</option><option>Snacks</option><option>Extras</option></select>
+        <input id="pprice" type="number" min="0" step="10" placeholder="Precio (CLP)" />
+        <input id="pstock" type="number" min="0" step="1" placeholder="Stock" />
+        <label style="display:flex;gap:6px;align-items:center"><input id="pactive" type="checkbox" checked> Activo</label>
+        <button id="add" class="btn primary">Agregar</button>
+        <span style="flex:1"></span>
+        <input id="q" placeholder="Buscar por nombre" style="flex:1; min-width:180px">
+        <select id="fcat"><option value="">Todas las categorías</option><option>Bowls</option><option>Snacks</option><option>Extras</option></select>
+      </div>
+
+
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+
+
+      <div id="m-ok" class="msg ok">Cambios guardados correctamente</div>
+      <div id="m-warn" class="msg warn">Faltan campos o valores inválidos</div>
+      <div id="m-err" class="msg err">Error al guardar · Intenta nuevamente</div>
+    </section>
+  </main>
+
+  <script>
+
+    let products = [
+      { id:1, name:'Bowl Proteico', category:'Bowls', price:6990, stock:5, active:true },
+      { id:2, name:'Bowl Vegano', category:'Bowls', price:6490, stock:0, active:true },
+      { id:3, name:'Snack Proteico', category:'Snacks', price:2990, stock:20, active:true },
+      { id:4, name:'Extra Palta', category:'Extras', price:990, stock:40, active:true }
+    ];
+
+    const rows = document.getElementById('rows');
+    const q = document.getElementById('q');
+    const fcat = document.getElementById('fcat');
+
+    function clp(n){ return new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(n); }
+
+    function render(){
+      rows.innerHTML='';
+      const term = q.value.trim().toLowerCase();
+      const cat = fcat.value;
+      products
+        .filter(p=>!term || p.name.toLowerCase().includes(term))
+        .filter(p=>!cat || p.category===cat)
+        .forEach(p=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><input value="${p.name}" data-k="name"/></td>
+            <td>
+              <select data-k="category">
+                <option ${p.category==='Bowls'?'selected':''}>Bowls</option>
+                <option ${p.category==='Snacks'?'selected':''}>Snacks</option>
+                <option ${p.category==='Extras'?'selected':''}>Extras</option>
+              </select>
+            </td>
+            <td><input type="number" min="0" step="10" value="${p.price}" data-k="price"/></td>
+            <td><input type="number" min="0" step="1" value="${p.stock}" data-k="stock"/></td>
+            <td><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" ${p.active?'checked':''} data-k="active"> Activo</label></td>
+            <td>
+              <button class="btn blue" data-action="save">Guardar</button>
+              <button class="btn red" data-action="del">Eliminar</button>
+            </td>`;
+
+          tr.querySelector('[data-action=save]').addEventListener('click', ()=> saveRow(p.id, tr));
+          tr.querySelector('[data-action=del]').addEventListener('click', ()=> removeRow(p.id));
+          rows.appendChild(tr);
+        });
+    }
+
+    function show(id){ ['m-ok','m-warn','m-err'].forEach(x=>document.getElementById(x).classList.remove('show')); id && document.getElementById(id).classList.add('show'); }
+
+    function saveRow(id, tr){
+      show();
+     
+      if(Math.random()<0.05){ show('m-err'); return; }
+      const obj = products.find(p=>p.id===id);
+      const get = sel=> tr.querySelector(sel);
+      const name = get('input[data-k=name]').value.trim();
+      const category = get('select[data-k=category]').value;
+      const price = parseInt(get('input[data-k=price]').value,10);
+      const stock = parseInt(get('input[data-k=stock]').value,10);
+      const active = get('input[data-k=active]').checked;
+      if(!name || isNaN(price) || isNaN(stock)){ show('m-warn'); return; }
+      Object.assign(obj,{name,category,price,stock,active});
+      show('m-ok');
+      render();
+    }
+
+    function removeRow(id){
+      show();
+      products = products.filter(p=>p.id!==id);
+      render();
+      show('m-ok');
+    }
+
+    
+    document.getElementById('add').addEventListener('click', ()=>{
+      show();
+      const name = document.getElementById('pname').value.trim();
+      const category = document.getElementById('pcat').value;
+      const price = parseInt(document.getElementById('pprice').value,10);
+      const stock = parseInt(document.getElementById('pstock').value,10);
+      const active = document.getElementById('pactive').checked;
+      if(!name || isNaN(price) || isNaN(stock)){ show('m-warn'); return; }
+      const id = Math.max(0,...products.map(p=>p.id))+1;
+      products.push({id,name,category,price,stock,active});
+      document.getElementById('pname').value=''; document.getElementById('pprice').value=''; document.getElementById('pstock').value='';
+      render(); show('m-ok');
+    });
+
+    q.addEventListener('input', render);
+    fcat.addEventListener('change', render);
+
+
+    render();
+  </script>
+</body>
+</html>

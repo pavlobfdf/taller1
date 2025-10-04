@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrito · Editor simple</title>
+  <style>
+    body{font-family:Arial, sans-serif; background:#f6f7fb; margin:0; color:#0f172a}
+    .wrap{max-width:860px; margin:24px auto; padding:0 16px}
+
+    .card{background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.04); padding:14px}
+    .item{border:1px solid #e5e7eb; border-radius:10px; padding:12px; margin-bottom:12px}
+
+    .row{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
+    .left{display:flex; align-items:center; gap:10px}
+    .thumb{width:90px; height:60px; border-radius:8px; background:#f1f5f9}
+
+    .muted{color:#6b7280}
+    .btn{padding:6px 10px; border:1px solid #e5e7eb; border-radius:8px; background:#fff; cursor:pointer}
+    .btn.edit{color:#2563eb}
+    .btn.del{color:#b91c1c}
+    input.qty{width:64px; padding:6px 8px; border:1px solid #e5e7eb; border-radius:6px}
+
+    .msg{display:none; margin-top:10px; padding:10px; border-radius:8px}
+    .ok{background:#dcfce7; color:#065f46}
+    .empty{background:#fef3c7; color:#92400e}
+    .err{background:#fee2e2; color:#7f1d1d}
+    .show{display:block}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <div id="list"></div>
+      <div id="m-ok" class="msg ok">✓ Carrito actualizado automáticamente</div>
+      <div id="m-empty" class="msg empty">Carrito vacío · No hay productos.</div>
+      <div id="m-err" class="msg err">Error al actualizar · Intenta nuevamente.</div>
+    </section>
+  </main>
+
+  <script>
+
+    const cart = [{ id:1, name:'Bowl Proteico', price:6990, qty:1 }];
+
+    const $list = document.getElementById('list');
+    const $ok = document.getElementById('m-ok');
+    const $empty = document.getElementById('m-empty');
+    const $err = document.getElementById('m-err');
+
+    function clp(n){ return new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(n); }
+    function show(el){ [$ok,$empty,$err].forEach(e=>e.classList.remove('show')); el && el.classList.add('show'); }
+
+    function render(){
+      $list.innerHTML = '';
+      if(cart.length===0){ show($empty); return; }
+      show(null);
+      cart.forEach(p=>{
+        const el = document.createElement('div'); el.className='item';
+        el.innerHTML = `
+          <div class="row">
+            <div class="left">
+              <div class="thumb"></div>
+              <div>
+                <strong>${p.name}</strong>
+                <div class="muted">Cantidad: <span class="q">${p.qty}</span></div>
+              </div>
+            </div>
+            <div><strong>${clp(p.price)}</strong></div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <div class="left">
+              <input class="qty" type="number" min="1" value="${p.qty}" style="display:none"/>
+              <button class="btn edit">Editar</button>
+            </div>
+            <button class="btn del">Eliminar</button>
+          </div>`;
+
+        const btnEdit = el.querySelector('.edit');
+        const input = el.querySelector('.qty');
+        const qSpan = el.querySelector('.q');
+        const btnDel = el.querySelector('.del');
+
+        btnEdit.addEventListener('click', ()=>{
+          const editing = input.style.display === 'inline-block';
+          input.style.display = editing? 'none':'inline-block';
+          if(!editing){ input.focus(); }
+          btnEdit.textContent = editing? 'Editar':'Guardar';
+
+          if(editing){ 
+            const val = Math.max(1, parseInt(input.value || '1', 10));
+
+            if(Math.random()<0.05){ show($err); input.value = p.qty; btnEdit.textContent='Editar'; input.style.display='none'; return; }
+            p.qty = val; qSpan.textContent = p.qty; show($ok);
+          }
+        });
+
+        input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ btnEdit.click(); }});
+
+        btnDel.addEventListener('click', ()=>{
+          const i = cart.findIndex(x=>x.id===p.id);
+          cart.splice(i,1);
+          render();
+          if(cart.length===0) show($empty); else show($ok);
+        });
+
+        $list.appendChild(el);
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>
