@@ -1,6 +1,733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>FitExpress — Bowls & Snacks</title>
+  <meta name="description" content="FitExpress: comida rápida saludable. Bowls proteicos y snacks listos para llevar.">
+<link rel="stylesheet" href="styles.css">
+
+</head>
 <body>
 
-    ola
+  <header class="site-header">
+    <button id="btnMenu" class="btn-ghost">☰ Menú</button>
+    <div class="brand-min">
+      <div class="logo-min">FE</div>
+      <div class="brand-text-min">FitExpress</div>
+    </div>
+    <button class="btn-ghost cart-fab" id="btnCart">🛒 <span id="cartCount">0</span></button>
+  </header>
 
-    
+
+  <aside id="drawer" class="drawer">
+    <div class="drawer-head">
+      <div class="logo-min">FE</div>
+      <strong>FitExpress</strong>
+      <button id="btnClose" class="btn-ghost">✕</button>
+    </div>
+    <nav class="drawer-nav">
+      <button class="nav-item" data-goto="#home">Inicio</button>
+      <button class="nav-item" data-goto="#catalogo">Catálogo</button>
+      <button class="nav-item" data-goto="#seguimiento">Seguimiento</button>
+      <button class="nav-item" data-goto="#contacto">Contacto</button>
+      <hr>
+      <button class="nav-item" data-open="login">Iniciar sesión</button>
+      <button class="nav-item" data-open="registro">Crear cuenta</button>
+    </nav>
+    <div class="drawer-foot">
+      <small>© FitExpress</small>
+    </div>
+  </aside>
+  <div id="backdrop" class="backdrop"></div>
+
+
+  <main>
+
+    <section id="home" class="section hero">
+      <div class="hero-text">
+        <h1>Comida rápida saludable</h1>
+        <p>Bowls proteicos y snacks hechos con ingredientes reales. Personaliza tu base, aderezos y extras.</p>
+        <div class="row">
+          <button class="btn" data-goto="#catalogo">Explorar catálogo</button>
+          <button class="btn-ghost" data-open="registro">Crear cuenta</button>
+        </div>
+        <div class="badges">
+          <span> 15–20 min</span>
+          <span> Sin frituras</span>
+          <span> Delivery & retiro</span>
+        </div>
+      </div>
+      <div class="hero-card">
+        <img id="heroImg" alt="Bowl destacado">
+        <div class="hero-card-body">
+          <div>
+            <strong id="heroName">Bowl del día</strong>
+            <div class="muted" id="heroPrice">CLP $0</div>
+          </div>
+          <button class="btn-mini" id="heroAdd">Agregar</button>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="section quick">
+      <button class="chip" data-filter='{"cat":"Bowls"}'> Bowls</button>
+      <button class="chip" data-filter='{"cat":"Snacks"}'> Snacks</button>
+      <button class="chip" data-filter='{"tag":"vegano"}'> Vegano</button>
+      <button class="chip" data-filter='{"tag":"proteico"}'> Proteico</button>
+    </section>
+
+    <section id="promo" class="section deal">
+      <div class="deal-content">
+        <h3>Combo del mes: Bowl + Snack <span class="badge">-15%</span></h3>
+        <p class="muted">Ahorra y personaliza tus extras. Cupón <b>FIT10</b> sumable.</p>
+        <button id="dealAdd" class="btn" type="button">Agregar combo</button>
+      </div>
+      <div class="deal-media">
+        <div class="deal-pics">
+          <div class="deal-pic" id="dealPic1" title="Bowl proteico"></div>
+          <div class="deal-pic" id="dealPic2" title="Snack proteico"></div>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="catalogo" class="section">
+      <div class="section-head">
+        <h2>Catálogo</h2>
+        <div class="filters">
+          <input id="q" class="input" placeholder="Buscar (ej: pollo, vegano)…"/>
+          <select id="fCategoria" class="select">
+            <option value="">Todas las categorías</option>
+          </select>
+          <select id="fTag" class="select">
+            <option value="">Etiquetas</option>
+            <option value="proteico">Proteico</option>
+            <option value="vegano">Vegano</option>
+            <option value="sin-azucar">Sin azúcar</option>
+            <option value="sin-gluten">Sin gluten</option>
+          </select>
+          <select id="fOrden" class="select">
+            <option value="destacados">Destacados</option>
+            <option value="precioAsc">Precio ↑</option>
+            <option value="precioDesc">Precio ↓</option>
+            <option value="nombre">Nombre</option>
+          </select>
+          <button id="aplicarFiltros" class="btn-ghost">Aplicar</button>
+        </div>
+      </div>
+
+      <div id="grid" class="grid"></div>
+
+      <div class="paginacion">
+        <button id="prevPag" class="btn-ghost">◀</button>
+        <span id="pagInfo" class="muted">Página 1 de 1</span>
+        <button id="nextPag" class="btn-ghost">▶</button>
+      </div>
+    </section>
+
+    <dialog id="productModal" class="modal">
+      <div class="modal-body">
+        <button class="close" data-modal-close>✕</button>
+        <div class="product">
+          <div class="product-media">
+            <img id="pImg" alt="">
+            <div id="pTags" class="tag-row"></div>
+          </div>
+          <div class="product-body">
+            <h3 id="pNombre"></h3>
+            <p id="pDesc" class="muted"></p>
+            <div class="price-line">
+              <div class="price" id="pPrecio">CLP $0</div>
+              <div class="stock" id="pStock"></div>
+            </div>
+            <div id="pOptions"></div>
+            <div class="qty-row">
+              <button id="qtyLess" class="btn-mini">−</button>
+              <input id="qty" value="1" readonly>
+              <button id="qtyPlus" class="btn-mini">+</button>
+              <button id="btnAddConfig" class="btn">Agregar</button>
+            </div>
+            <div class="nutri">
+              <div><b>kcal</b><span id="nKcal">—</span></div>
+              <div><b>Prot</b><span id="nProt">—</span></div>
+              <div><b>Carb</b><span id="nCarb">—</span></div>
+              <div><b>Grasa</b><span id="nFat">—</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <section id="seguimiento" class="section">
+      <h2>Seguimiento de pedido</h2>
+      <div class="card-min">
+        <div class="row wrap">
+          <select id="segSelect" class="select"></select>
+          <input id="segIdManual" class="input" placeholder="o pega tu código (FE-12345)">
+          <button id="segCargar" class="btn-ghost">Cargar</button>
+        </div>
+        <div class="pill-row">
+          <span id="segHead" class="pill">Pedido: —</span>
+        </div>
+        <div class="two">
+          <div>
+            <h4>Historial</h4>
+            <ul id="segHist" class="list"></ul>
+            <button id="btnActualizarSeg" class="btn-ghost">Actualizar estado simulado</button>
+          </div>
+          <div>
+            <h4>Detalle</h4>
+            <div id="segResumen" class="seg-list"></div>
+            <div class="pill-row">
+              <span id="segSubtotal" class="pill"></span>
+              <span id="segShipping" class="pill"></span>
+              <span id="segTotal" class="pill"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contacto" class="section">
+      <h2>Contacto</h2>
+      <div class="card-min">
+        <div class="two">
+          <form id="contactForm" class="stack">
+            <input id="cNombre" class="input" placeholder="Tu nombre">
+            <input id="cEmail" class="input" placeholder="tu@correo.com" type="email">
+            <textarea id="cMsg" class="input" rows="5" placeholder="Cuéntanos en qué te ayudamos…"></textarea>
+            <button class="btn" type="submit">Enviar</button>
+            <div id="cAlert" class="alert hidden"></div>
+          </form>
+          <div class="stack">
+            <div class="map-min">
+              <div class="pin">FE</div>
+            </div>
+            <div class="contact-cards">
+              <div class="contact-item">
+                <strong>FitExpress SpA</strong>
+                <div class="muted">RUT 76.123.456-7</div>
+              </div>
+              <div class="contact-item">
+                <strong>Dirección</strong>
+                <div class="muted">Av. Los Leones 345, Providencia, Santiago</div>
+              </div>
+              <div class="contact-item">
+                <strong>Horario</strong>
+                <div class="muted">Lun–Sáb 11:30–22:00 · Dom 12:00–20:00</div>
+              </div>
+              <div class="contact-item">
+                <strong>Teléfono</strong>
+                <div class="muted"><a href="tel:+56976543210">+56 9 7654 3210</a></div>
+              </div>
+              <div class="contact-item">
+                <strong>Email</strong>
+                <div class="muted"><a href="mailto:hola@fitexpress.cl">hola@fitexpress.cl</a></div>
+              </div>
+              <div class="contact-item">
+                <strong>Instagram</strong>
+                <div class="muted"><a href="https://instagram.com/fitexpress_cl" target="_blank" rel="noopener">@fitexpress_cl</a></div>
+              </div>
+            </div>
+            <div class="row">
+              <a class="btn-ghost" href="tel:+56976543210">Llamar</a>
+              <a class="btn-ghost" href="https://wa.me/56976543210" target="_blank" rel="noopener">WhatsApp</a>
+              <a class="btn-ghost" href="mailto:hola@fitexpress.cl">Email</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <dialog id="authLogin" class="modal">
+    <div class="modal-body auth">
+      <button class="close" data-modal-close>✕</button>
+      <h3>Iniciar sesión</h3>
+      <input id="loginEmail" class="input" placeholder="tu@correo.com" type="email">
+      <input id="loginPass" class="input" placeholder="Contraseña" type="password">
+      <button id="btnLogin" class="btn">Entrar</button>
+      <div id="loginMsg" class="alert err hidden"></div>
+      <div class="muted">¿Sin cuenta? <a href="#" data-switch="registro">Crear cuenta</a></div>
+    </div>
+  </dialog>
+
+  <dialog id="authReg" class="modal">
+    <div class="modal-body auth">
+      <button class="close" data-modal-close>✕</button>
+      <h3>Crear cuenta</h3>
+      <input id="regEmail" class="input" placeholder="tu@correo.com" type="email">
+      <input id="regPass" class="input" placeholder="Mín. 8, Aa1" type="password">
+      <button id="btnReg" class="btn">Crear</button>
+      <div id="regOk" class="alert ok hidden">Cuenta creada. ¡Bienvenid@!</div>
+      <div id="regErr" class="alert err hidden"></div>
+      <div class="muted">¿Ya tienes cuenta? <a href="#" data-switch="login">Ingresar</a></div>
+    </div>
+  </dialog>
+
+  <footer class="site-foot">
+    <div class="foot-wrap">
+      <div class="foot-col">
+        <div class="brand-min" style="margin-bottom:.4rem">
+          <div class="logo-min">FE</div>
+          <div class="brand-text-min">FitExpress</div>
+        </div>
+        <p class="muted">Comida rápida saludable. Bowls proteicos y snacks listos para llevar.</p>
+        <form id="nlForm" class="nl">
+          <input id="nlEmail" class="input" type="email" placeholder="Tu correo">
+          <button class="btn-mini" type="submit">Suscribirme</button>
+        </form>
+        <div id="nlMsg" class="alert ok hidden">¡Te sumaste a nuestras novedades!</div>
+      </div>
+
+      <div class="foot-col">
+        <strong>Navegación</strong>
+        <ul class="foot-list">
+          <li><a href="#home" data-goto="#home">Inicio</a></li>
+          <li><a href="#catalogo" data-goto="#catalogo">Catálogo</a></li>
+          <li><a href="#seguimiento" data-goto="#seguimiento">Seguimiento</a></li>
+          <li><a href="#contacto" data-goto="#contacto">Contacto</a></li>
+        </ul>
+      </div>
+
+      <div class="foot-col">
+        <strong>Ayuda & Legales</strong>
+        <ul class="foot-list">
+          <li><a href="#contacto" data-goto="#contacto">Preguntas frecuentes</a></li>
+          <li><a href="#" onclick="alert('Política de privacidad demo');return false;">Política de privacidad</a></li>
+          <li><a href="#" onclick="alert('Términos y condiciones demo');return false;">Términos y condiciones</a></li>
+        </ul>
+        <div class="foot-legal muted">
+          FitExpress SpA · RUT 76.123.456-7<br>
+          Av. Los Leones 345, Providencia, Santiago<br>
+          <a href="mailto:hola@fitexpress.cl">hola@fitexpress.cl</a> · <a href="tel:+56976543210">+56 9 7654 3210</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-copy muted">© <span id="y">2025</span> FitExpress · Todos los derechos reservados</div>
+  </footer>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+    const money = n => "CLP $" + Number(n||0).toLocaleString("es-CL");
+
+
+    const USERS_KEY="fe:users";
+    const SESSION_KEY="fe:session";
+    const CART_KEY="fe:cart";
+    const ORDERS_KEY="fe:orders";
+    const getUsers = ()=> JSON.parse(localStorage.getItem(USERS_KEY)||"{}");
+    const setUsers = v => localStorage.setItem(USERS_KEY,JSON.stringify(v));
+    const getSession = ()=> localStorage.getItem(SESSION_KEY)||"";
+    const setSession = v => localStorage.setItem(SESSION_KEY,v||"");
+    const getCart = ()=> JSON.parse(localStorage.getItem(CART_KEY)||"[]");
+    const setCart = v => localStorage.setItem(CART_KEY,JSON.stringify(v));
+    const getOrders = ()=> JSON.parse(localStorage.getItem(ORDERS_KEY)||"[]");
+    const setOrders = v => localStorage.setItem(ORDERS_KEY,JSON.stringify(v));
+
+    const productos = [
+      {id:"bowl-proteico", nombre:"Bowl Proteico (pollo + quinoa)", precio:6990, stock:8, cat:"Bowls", tags:["proteico","sin-azucar"], desc:"Base quinoa o arroz, pollo a la plancha, brócoli, mix verde y semillas.",
+        macros:{kcal:520,prot:36,carb:48,fat:18},
+        opciones:{
+          base:{type:"radio", label:"Base", items:[{id:"quinoa",label:"Quinoa",price:0},{id:"arroz",label:"Arroz integral",price:0}]},
+          aderezo:{type:"select", label:"Aderezo", items:[{id:"limon",label:"Limón",price:0},{id:"yogurt",label:"Yogurt",price:200},{id:"mostaza",label:"Mostaza miel",price:200}]},
+          extras:{type:"checkbox", label:"Extras", items:[{id:"palta",label:"Palta",price:990},{id:"huevo",label:"Huevo",price:790}]}
+        },
+        img:"https://hips.hearstapps.com/hmg-prod/images/arroz-pollo-brocoli-66e16b40bd2a7.png?crop=1xw:0.5918416030534351xh;center,top&resize=1200:*"},
+      {id:"bowl-vegano", nombre:"Bowl Vegano (garbanzos + palta)", precio:6490, stock:0, cat:"Bowls", tags:["vegano","sin-gluten"], desc:"Garbanzos salteados, palta, tomate cherry, pepino y mix verde.",
+        macros:{kcal:480,prot:20,carb:54,fat:16},
+        opciones:{
+          base:{type:"radio", label:"Base", items:[{id:"quinoa",label:"Quinoa",price:0},{id:"mix-verde",label:"Mix verde",price:0}]},
+          aderezo:{type:"select", label:"Aderezo", items:[{id:"balsamico",label:"Balsámico",price:0},{id:"tahini",label:"Tahini",price:300}]},
+          extras:{type:"checkbox", label:"Extras", items:[{id:"palta-extra",label:"Palta extra",price:990}]}
+        },
+        img:"https://d36fw6y2wq3bat.cloudfront.net/recipes/bowl-de-arroz-con-garbanzos-y-aguacate/900/bowl-de-arroz-con-garbanzos-y-aguacate_version_1652869445.jpg"},
+      {id:"snack-proteico", nombre:"Snack proteico (barrita 20g)", precio:2990, stock:20, cat:"Snacks", tags:["proteico","sin-azucar"], desc:"Barra alta en proteína, endulzada con stevia.",
+        macros:{kcal:210,prot:20,carb:14,fat:7},
+        opciones:{ extras:{type:"checkbox", label:"Pack", items:[{id:"x6",label:"Caja x6 (-5%)",pricePct:-5},{id:"x12",label:"Caja x12 (-10%)",pricePct:-10}] } },
+        img:"https://allnutrition.cl/cdn/shop/files/s211003-12-box-51-min-10be8db6-8c30-455b-8713-4f93f8bd607f.jpg?v=1736463112"},
+      {id:"mix-frutos", nombre:"Mix de frutos secos 80g", precio:2490, stock:12, cat:"Snacks", tags:["sin-azucar","sin-gluten"], desc:"Almendras, nueces, castañas de cajú y arándanos.",
+        macros:{kcal:380,prot:10,carb:22,fat:28}, img:"https://f.fcdn.app/imgs/49affb/www.elclon.com.uy/clonuy/0cce/original/catalogo/31963-1/1920-1200/snack-mix-frutos-secos-de-la-tierra-s-sal-80g-snack-mix-frutos-secos-de-la-tierra-s-sal-80g.jpg"},
+      {id:"extra-palta", nombre:"Extra: Palta", precio:990, stock:35, cat:"Extras", tags:["sin-gluten"], desc:"Añade cremosidad a tu bowl.",
+        macros:{kcal:120,prot:2,carb:6,fat:10}, img:"https://unimarc.vtexassets.com/arquivos/ids/228044/000000000000265090-UN-01.jpg?v=637932365175670000"},
+      {id:"extra-huevo", nombre:"Extra: Huevo", precio:790, stock:40, cat:"Extras", tags:["proteico","sin-gluten"], desc:"Huevo cocido, listo para sumar proteína.",
+        macros:{kcal:70,prot:6,carb:1,fat:5}, img:"https://preview.redd.it/i-made-a-clay-yolky-slime-v0-gja1b2df9l5e1.jpg?width=360&format=pjpg&auto=webp&s=e9da9efb48b1daee344e348404e47ea357c29959"}
+    ];
+
+    const CUPONES = {"FIT10":0.10};
+    const nowOrderId = () => "FE-" + (10000 + Math.floor(Math.random()*90000));
+    const drawer = $("#drawer"), backdrop=$("#backdrop");
+    const openDrawer = ()=>{ drawer.classList.add("open"); backdrop.classList.add("show"); };
+    const closeDrawer = ()=>{ drawer.classList.remove("open"); backdrop.classList.remove("show"); };
+    $("#btnMenu").onclick=openDrawer;
+    $("#btnClose").onclick=closeDrawer;
+    backdrop.onclick=closeDrawer;
+
+    function smoothTo(sel){
+      const el = document.querySelector(sel);
+      if(!el) return;
+      closeDrawer();
+      el.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+    $$(".nav-item[data-goto]").forEach(b=> b.onclick=()=> smoothTo(b.dataset.goto));
+    $$("[data-goto]").forEach(b=> b.addEventListener("click", ()=> smoothTo(b.dataset.goto)));
+    $("#y").textContent = new Date().getFullYear();
+    function goToCatalogWith({cat,tag}){
+      $("#fCategoria").value = cat||"";
+      $("#fTag").value = tag||"";
+      $("#q").value = "";
+      $("#fOrden").value = "destacados";
+      pintarCatalogo(true);
+      smoothTo("#catalogo");
+    }
+    $$(".chip[data-filter]").forEach(b=>{
+      b.onclick=()=>{
+        const obj = JSON.parse(b.dataset.filter||"{}");
+        goToCatalogWith({cat:obj.cat, tag:obj.tag});
+      };
+    });
+    function renderHero(){
+      const p = productos.find(x=>x.stock>0) || productos[0];
+      if(!p) return;
+      $("#heroImg").src=p.img; $("#heroImg").alt=p.nombre;
+      $("#heroName").textContent=p.nombre;
+      $("#heroPrice").textContent=money(p.precio);
+      $("#heroAdd").onclick=()=>{ agregar(p.id,1,null); updateCartCount(); };
+    }
+
+    function renderPromo(){
+      const bowl = productos.find(p=>p.id==="bowl-proteico") || productos.find(p=>p.cat==="Bowls");
+      const snack = productos.find(p=>p.id==="snack-proteico") || productos.find(p=>p.cat==="Snacks");
+      if($("#dealPic1") && bowl) $("#dealPic1").style.backgroundImage = `url("${bowl.img}")`;
+      if($("#dealPic2") && snack) $("#dealPic2").style.backgroundImage = `url("${snack.img}")`;
+      if($("#dealAdd")){
+        $("#dealAdd").onclick = ()=>{
+          if(bowl && bowl.stock>0) agregar(bowl.id,1,null);
+          if(snack && snack.stock>0) agregar(snack.id,1,null);
+          updateCartCount();
+          alert("¡Combo agregado al carrito!");
+        };
+      }
+    }
+
+    let pag=1, pageSize=6, cacheFiltro={};
+    function seedFiltros(){
+      const cats=[...new Set(productos.map(p=>p.cat))];
+      const sel=$("#fCategoria");
+      cats.forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
+    }
+    function filtrarOrdenar(){
+      let arr=[...productos];
+      const q=$("#q").value.trim().toLowerCase();
+      const c=$("#fCategoria").value;
+      const t=$("#fTag").value;
+      const o=$("#fOrden").value;
+
+      if(q) arr=arr.filter(p=>p.nombre.toLowerCase().includes(q));
+      if(c) arr=arr.filter(p=>p.cat===c);
+      if(t) arr=arr.filter(p=> (p.tags||[]).includes(t));
+
+      if(o==="precioAsc") arr.sort((a,b)=>a.precio-b.precio);
+      if(o==="precioDesc") arr.sort((a,b)=>b.precio-a.precio);
+      if(o==="nombre") arr.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+
+      cacheFiltro.arr=arr;
+      cacheFiltro.pages=Math.max(1,Math.ceil(arr.length/pageSize));
+      pag=Math.min(pag,cacheFiltro.pages);
+    }
+    function pintarCatalogo(resetPage){
+      if(resetPage) pag=1;
+      filtrarOrdenar();
+      const start=(pag-1)*pageSize;
+      const items=cacheFiltro.arr.slice(start,start+pageSize);
+      const grid=$("#grid"); grid.innerHTML="";
+      items.forEach(p=>{
+        const card=document.createElement("div");
+        card.className="card";
+        card.innerHTML=`
+          <div class="pic"><img src="${p.img}" alt="${p.nombre}"/></div>
+          <div class="card-body">
+            <div>
+              <h4>${p.nombre}</h4>
+              <div class="muted">${p.cat}</div>
+            </div>
+            <div class="price">${money(p.precio)}</div>
+          </div>
+          <div class="row">
+            <button class="btn-mini" data-id="${p.id}" ${p.stock?"":"disabled"}>Agregar</button>
+            <button class="btn-mini ghost" data-open="${p.id}">Ver</button>
+          </div>`;
+        grid.appendChild(card);
+      });
+      $("#pagInfo").textContent=`Página ${pag} de ${cacheFiltro.pages}`;
+      $$("#grid [data-id]").forEach(b=> b.onclick=()=>{ agregar(b.dataset.id,1,null); updateCartCount(); });
+      $$("#grid [data-open]").forEach(b=> b.onclick=()=> openProduct(b.dataset.open));
+    }
+    $("#prevPag").onclick=()=>{ if(pag>1){pag--; pintarCatalogo();} };
+    $("#nextPag").onclick=()=>{ if(pag<cacheFiltro.pages){pag++; pintarCatalogo();} };
+    $("#aplicarFiltros").onclick=()=> pintarCatalogo(true);
+    $("#q").addEventListener("keydown",e=>{ if(e.key==="Enter") pintarCatalogo(true); });
+
+    function keyForItem(id,cfg){ return JSON.stringify({id, cfg:cfg||null}); }
+    function unitPrice(p,cfg){
+      let base=p.precio;
+      if(!cfg) return base;
+      if(cfg.extras && cfg.extras.length){
+        const exDefs=(p.opciones?.extras?.items)||[];
+        cfg.extras.forEach(x=>{
+          const d=exDefs.find(e=>e.id===x);
+          if(d?.price) base += d.price;
+          if(d?.pricePct) base = Math.round(base*(1+d.pricePct/100));
+        });
+      }
+      if(cfg.aderezo){
+        const ad = (p.opciones?.aderezo?.items||[]).find(a=>a.id===cfg.aderezo);
+        if(ad?.price) base += ad.price;
+      }
+      return base;
+    }
+    function agregar(id,qty,cfg){
+      qty=qty||1;
+      const p=productos.find(x=>x.id===id);
+      if(!p || p.stock<=0) return;
+      const cart=getCart();
+      const k=keyForItem(id,cfg);
+      const it=cart.find(x=>x._key===k);
+      if(it){ it.qty+=qty; }
+      else cart.push({_key:k,id,qty,cfg:cfg||null});
+      setCart(cart);
+    }
+    function updateCartCount(){
+      const cart=getCart();
+      const total = cart.reduce((a,b)=>a+b.qty,0);
+      $("#cartCount").textContent=total;
+    }
+    let currentCfg={}, currentProduct=null;
+    function openProduct(id){
+      const p = productos.find(x=>x.id===id);
+      if(!p) return;
+      currentProduct=p; currentCfg={}; $("#qty").value=1;
+
+      $("#pImg").src=p.img; $("#pImg").alt=p.nombre;
+      $("#pNombre").textContent=p.nombre;
+      $("#pDesc").textContent=p.desc||"";
+      $("#pPrecio").textContent = money(p.precio);
+      $("#pStock").textContent = p.stock>0 ? `Stock: ${p.stock}` : "Agotado";
+      $("#pTags").innerHTML=(p.tags||[]).map(t=>`<span class="tag">${t}</span>`).join("");
+
+      $("#nKcal").textContent = p.macros?.kcal ?? "—";
+      $("#nProt").textContent = p.macros?.prot!=null ? p.macros.prot+"g" : "—";
+      $("#nCarb").textContent = p.macros?.carb!=null ? p.macros.carb+"g" : "—";
+      $("#nFat").textContent  = p.macros?.fat !=null ? p.macros.fat +"g" : "—";
+
+      const box=$("#pOptions"); box.innerHTML="";
+      const def=p.opciones||{};
+
+      if(def.base?.items?.length){
+        const g=document.createElement("div"); g.className="opt-group";
+        g.innerHTML = `<label>${def.base.label}</label>
+          <div class="opt-row">
+            ${def.base.items.map(x=>`<label class="chip"><input type="radio" name="base" value="${x.id}"> ${x.label}${x.price?` (+${money(x.price)})`:""}</label>`).join("")}
+          </div>`;
+        box.appendChild(g);
+        currentCfg.base=def.base.items[0].id;
+        g.querySelector(`input[value="${currentCfg.base}"]`).checked=true;
+        g.querySelectorAll('input[name="base"]').forEach(i=> i.onchange=()=>{ currentCfg.base=i.value; refreshPrice(); });
+      }
+
+      if(def.aderezo?.items?.length){
+        const g=document.createElement("div"); g.className="opt-group";
+        g.innerHTML = `<label>${def.aderezo.label}</label>
+          <select id="selAderezo" class="select">
+            ${def.aderezo.items.map(y=>`<option value="${y.id}">${y.label}${y.price?` (+${money(y.price)})`:""}</option>`).join("")}
+          </select>`;
+        box.appendChild(g);
+        currentCfg.aderezo=def.aderezo.items[0].id;
+        $("#selAderezo").onchange=e=>{ currentCfg.aderezo=e.target.value; refreshPrice(); };
+      }
+
+      if(def.extras?.items?.length){
+        const g=document.createElement("div"); g.className="opt-group";
+        g.innerHTML = `<label>${def.extras.label}</label>
+          <div class="opt-row">
+            ${def.extras.items.map(z=>`<label class="chip"><input type="checkbox" value="${z.id}"> ${z.label}${z.price?` (+${money(z.price)})`:""}${z.pricePct?` (${z.pricePct}%)`:""}</label>`).join("")}
+          </div>`;
+        box.appendChild(g);
+        currentCfg.extras=[];
+        g.querySelectorAll('input[type="checkbox"]').forEach(i=> i.onchange=()=>{
+          if(i.checked) currentCfg.extras.push(i.value);
+          else currentCfg.extras = currentCfg.extras.filter(v=>v!==i.value);
+          refreshPrice();
+        });
+      }
+
+      $("#qtyLess").onclick=()=>{ const v=Math.max(1, parseInt($("#qty").value,10)-1); $("#qty").value=v; };
+      $("#qtyPlus").onclick=()=>{ const v=Math.min(99, parseInt($("#qty").value,10)+1); $("#qty").value=v; };
+      $("#btnAddConfig").disabled = p.stock<=0;
+      $("#btnAddConfig").onclick = ()=>{
+        const q=parseInt($("#qty").value,10)||1;
+        agregar(p.id,q,currentCfg);
+        updateCartCount();
+        $("#productModal").close();
+      };
+
+      function refreshPrice(){ $("#pPrecio").textContent = money(unitPrice(p,currentCfg)); }
+      refreshPrice();
+
+      $("#productModal").showModal();
+    }
+    $$("[data-modal-close]").forEach(b=> b.onclick=()=> b.closest("dialog").close());
+
+    const nowId = () => "FE-" + (10000 + Math.floor(Math.random()*90000));
+    function createOrderFromCart(){
+      const cart = getCart();
+      if(!cart.length) return null;
+      const items = cart.map(it=>{
+        const p=productos.find(x=>x.id===it.id) || {};
+        return { id:it.id, nombre:p.nombre||it.id, qty:it.qty, unit: unitPrice(p,it.cfg)||0, cfg: it.cfg||null };
+      });
+      const subtotal = items.reduce((s,i)=> s + i.unit*i.qty, 0);
+      const shipping = items.length?3000:0;
+      const total = subtotal+shipping;
+      const order = { id: nowId(), createdAt: Date.now(), items, subtotal, shipping, total, status:"Pagado", history:[{ts:Date.now(),label:"Pagado"}] };
+      const list=getOrders(); list.unshift(order); setOrders(list);
+      return order;
+    }
+
+    function renderSeguimiento(){
+      const sel=$("#segSelect");
+      const list=getOrders();
+      sel.innerHTML = list.length? "" : '<option value="">Sin pedidos aún</option>';
+      list.forEach(o=>{
+        const d=new Date(o.createdAt).toLocaleString();
+        const opt=document.createElement("option");
+        opt.value=o.id; opt.textContent=`${o.id} — ${money(o.total)} — ${d}`;
+        sel.appendChild(opt);
+      });
+      if(list[0]) pintarOrder(list[0].id);
+
+      $("#segCargar").onclick=()=>{
+        const typed=($("#segIdManual").value||"").trim().toUpperCase();
+        const chosen=sel.value;
+        pintarOrder(typed||chosen);
+      };
+      sel.onchange=()=> pintarOrder(sel.value);
+
+      $("#btnActualizarSeg").onclick=()=>{
+        const id=$("#segHead").dataset.id; if(!id) return;
+        const flow=["Pagado","Confirmado","En preparación","En camino","Entregado"];
+        const list=getOrders(); const o=list.find(x=>x.id===id); if(!o) return;
+        const i=Math.min(flow.indexOf(o.status)+1, flow.length-1);
+        o.status=flow[i]; o.history.push({ts:Date.now(),label:o.status});
+        setOrders(list); pintarOrder(id);
+      };
+    }
+    function pintarOrder(id){
+      const o = getOrders().find(x=>x.id===id);
+      if(!o){ $("#segHead").textContent="Pedido: —"; $("#segHead").dataset.id=""; $("#segHist").innerHTML=""; $("#segResumen").innerHTML=""; return; }
+      $("#segHead").textContent=`Pedido: ${o.id} · ${o.status} · Total ${money(o.total)}`;
+      $("#segHead").dataset.id=o.id;
+      const ul=$("#segHist"); ul.innerHTML="";
+      o.history.sort((a,b)=>a.ts-b.ts).forEach(h=>{
+        const li=document.createElement("li"); li.textContent=`${new Date(h.ts).toLocaleString()} — ${h.label}`; ul.appendChild(li);
+      });
+      const div=$("#segResumen"); div.innerHTML="";
+      o.items.forEach(it=>{
+        const row=document.createElement("div"); row.className="seg-item";
+        row.innerHTML=`<div>${it.qty} × ${it.nombre}</div><div class="muted">${cfgToText(productos.find(p=>p.id===it.id)||{}, it.cfg)}</div><div>${money(it.unit)}</div><div><strong>${money(it.unit*it.qty)}</strong></div>`;
+        div.appendChild(row);
+      });
+      $("#segSubtotal").textContent="Subtotal: "+money(o.subtotal);
+      $("#segShipping").textContent="Despacho: "+money(o.shipping);
+      $("#segTotal").textContent="Total: "+money(o.total);
+    }
+    function cfgToText(p,cfg){
+      if(!cfg) return "";
+      const out=[];
+      if(cfg.base){
+        const d=p.opciones?.base?.items?.find(x=>x.id===cfg.base); if(d) out.push(d.label);
+      }
+      if(cfg.aderezo){
+        const d=p.opciones?.aderezo?.items?.find(x=>x.id===cfg.aderezo); if(d) out.push(d.label);
+      }
+      if(cfg.extras?.length){
+        const exDefs=p.opciones?.extras?.items||[];
+        const lbls=cfg.extras.map(x=> exDefs.find(y=>y.id===x)?.label).filter(Boolean);
+        if(lbls.length) out.push("+"+lbls.join(", "));
+      }
+      return out.join(" · ");
+    }
+
+    function openModal(id){ $(id).showModal(); }
+    function closeAllModals(){ $$("#authLogin, #authReg, #productModal").forEach(d=> d.close()); }
+    $$("[data-open='login']").forEach(b=> b.onclick=()=>{ closeDrawer(); openModal("#authLogin"); });
+    $$("[data-open='registro']").forEach(b=> b.onclick=()=>{ closeDrawer(); openModal("#authReg"); });
+    $$("[data-switch]").forEach(a=> a.onclick=(e)=>{ e.preventDefault(); const t=a.dataset.switch; closeAllModals(); openModal(t==="login"?"#authLogin":"#authReg"); });
+    $$("[data-modal-close]").forEach(b=> b.onclick=()=> b.closest("dialog").close());
+
+    function validatePassword(p){ return p && p.length>=8 && /[a-z]/.test(p) && /[A-Z]/.test(p) && /\d/.test(p); }
+    $("#btnLogin").onclick=()=>{
+      $("#loginMsg").classList.add("hidden");
+      const e=$("#loginEmail").value.trim().toLowerCase();
+      const p=$("#loginPass").value;
+      const u=getUsers()[e];
+      if(!u){ show("#loginMsg","El usuario no existe", "err"); return; }
+      if(u.pass!==p){ show("#loginMsg","Contraseña incorrecta", "err"); return; }
+      setSession(e); $("#authLogin").close();
+    };
+    $("#btnReg").onclick=()=>{
+      hide("#regOk","#regErr");
+      const e=$("#regEmail").value.trim().toLowerCase();
+      const p=$("#regPass").value;
+      const users=getUsers();
+      if(users[e]){ show("#regErr","El email ya está en uso","err"); return; }
+      if(!validatePassword(p)){ show("#regErr","Contraseña débil: 8+, Aa1","err"); return; }
+      users[e]={createdAt:Date.now(), pass:p}; setUsers(users); setSession(e);
+      show("#regOk","Cuenta creada. ¡Bienvenid@!","ok");
+      setTimeout(()=> $("#authReg").close(), 700);
+    };
+    function show(sel, msg, type){ const el=$(sel); el.textContent=msg; el.className=`alert ${type}`; }
+    function hide(...sels){ sels.forEach(s=> $(s).classList.add("hidden")); }
+
+    $("#contactForm").onsubmit=(e)=>{
+      e.preventDefault();
+      const n=$("#cNombre").value.trim();
+      const m=$("#cMsg").value.trim();
+      const em=$("#cEmail").value.trim();
+      const a=$("#cAlert");
+      if(!n || !m || !em.includes("@")){ a.className="alert err"; a.textContent="Completa nombre, email válido y mensaje."; return; }
+      a.className="alert ok"; a.textContent="¡Gracias! Te responderemos pronto.";
+      e.target.reset();
+      setTimeout(()=> a.classList.add("hidden"), 2000);
+    };
+
+
+    $("#nlForm").onsubmit=(e)=>{
+      e.preventDefault();
+      const em=($("#nlEmail").value||"").trim();
+      const msg=$("#nlMsg");
+      if(!em || !em.includes("@")){ msg.className="alert err"; msg.textContent="Ingresa un email válido."; msg.classList.remove("hidden"); return; }
+      msg.className="alert ok"; msg.textContent="¡Te sumaste a nuestras novedades!"; msg.classList.remove("hidden");
+      setTimeout(()=> msg.classList.add("hidden"), 2000);
+      e.target.reset();
+    };
+
+ 
+    $("#btnCart").onclick=()=>{
+      const order = createOrderFromCart();
+      if(order){ setCart([]); updateCartCount(); smoothTo("#seguimiento"); renderSeguimiento(); }
+      else{ alert("Tu carrito está vacío."); }
+    };
+    renderHero();
+    renderPromo();         
+    seedFiltros();
+    pintarCatalogo(true);
+    updateCartCount();
+    renderSeguimiento();
+  </script>
 </body>
+</html>
